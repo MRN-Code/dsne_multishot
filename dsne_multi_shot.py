@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Wed Oct 18 08:59:22 2017
+Created on Mon Jan 152017
 
-@author: dsaha
+@author: Deb
 """
+
+
 import numpy as np
 import json
 import argparse
@@ -14,6 +14,22 @@ from remote import remote_site
 from remote_computation import remote_operations
 
 if __name__ == "__main__":
+
+    ''' Call remote and local site and finally collect low dimensional output
+
+        remote_output (dictionary): {
+            "shared_X" (str): file path to remote site data
+            "shared_Label" (str): file path to remote site labels
+            "no_dims" (int): Final plotting dimensions
+            "initial_dims" (int): number of dimensions that PCA should produce
+            "perplexity" (int): initial guess for nearest neighbor
+            "max_iter" (str):  maximum number of iterations during tsne computation
+            }
+
+        computation_phase (string): field specifying which part (local/remote) of the 
+            decentralized computation is going to be performed.  
+            '''
+
     
     parser = argparse.ArgumentParser(description='''read in coinstac args for remote computation''')
     parser.add_argument('--run', type=json.loads, help='grab coinstac args')
@@ -25,16 +41,15 @@ if __name__ == "__main__":
         "no_dims": 2,
         "initial_dims": 50,
         "perplexity" : 20.0,
-        "max_iter" : 5
+        "max_iter" : 1000
     } '''
 
 
     args = parser.parse_args(['--run', sharedData])
 
-    #Remote output actually the "sharedData" with remote Y
     remote_output = remote_site(args.run, computation_phase='remote')
 
-    #for iter in range(sharedData["max_iter"]):
+    # Receive remote and local site data
     Y, local1Y,local2Y = remote_operations(remote_output, computation_phase='local')
 
 

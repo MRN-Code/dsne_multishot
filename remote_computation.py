@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Thu Oct 19 20:48:24 2017
+Created on Mon Jan 152017
 
-@author: gazula
+@author: Deb
 """
+
 
 import numpy as np
 from tsneFunctions import normalize_columns, tsne
@@ -15,6 +14,19 @@ import argparse
 
 
 def updateS(Y1,Y2, iY_Site_1, iY_Site_2):
+    ''' It will collect Y and IY from local sites and return the updated Y
+
+    args:
+        Y1: low dimensional shared data from site 1
+        Y2: low dimensional shared data from site 2
+        iY_Site_1: Comes from site 1
+        iY_Site_2: Comes from site 2
+
+    Returns:
+        Y: Updated shared value
+    '''
+
+
     Y= (Y1 + Y2 )/2
     iY = (iY_Site_1 + iY_Site_2) / 2
     Y = Y + iY
@@ -22,10 +34,29 @@ def updateS(Y1,Y2, iY_Site_1, iY_Site_2):
     return Y
 
 def demeanS(Y, average_Y):
+    ''' Subtract Y(low dimensional shared value )by the average_Y and return the updated Y) '''
+
+
     return Y - np.tile(average_Y, (Y.shape[0], 1))
 
 
 def remote_operations(args, computation_phase):
+    '''
+    args(dictionary):  {
+        "shared_X"(str): remote site data,
+        "shared_Label"(str): remote site labels
+        "no_dims"(int): Final plotting dimensions,
+        "initial_dims"(int): number of dimensions that PCA should produce
+        "perplexity"(int): initial guess for nearest neighbor
+        "shared_Y": the low - dimensional remote site data
+
+    Returns:
+        Y: the final computed low dimensional remote site data
+        local1Yvalues: Final low dimensional local site 1 data
+        local2Yvalues: Final low dimensional local site 2 data
+    }
+    '''
+
     parser = argparse.ArgumentParser(description='''read in coinstac args for remote computation''')
     parser.add_argument('--run', type=json.loads, help='grab coinstac args')
     Y = np.loadtxt(args["shared_Y"])
@@ -62,10 +93,11 @@ def remote_operations(args, computation_phase):
         C = C + (meanError2.run['output']['error'])
         numOfSites += 1;
 
-
+        # Here two local sites are considered. That's why it is divided by 2
         average_Y/=2
         C/=2
-        
+
+
         Y = updateS(Y1,Y2, IY1, IY2)
 
         Y = demeanS(Y, average_Y)
@@ -78,9 +110,11 @@ def remote_operations(args, computation_phase):
                 f.write(str(Y[i][1]) + '\n')
 
         args["shared_Y"] = "Y_values.txt"
-
+    # call local site 1 and collect low dimensional shared value of Y
     Y1 = local_site1(args, json.dumps(compAvgError, sort_keys=True,indent=4,separators=(',' ,':')), computation_phase='final')
     local1Yvalues = np.loadtxt(Y1["localSite1"])
+
+    # call local site 2 and collect low dimensional shared value of Y
     Y2 = local_site2(args, json.dumps(compAvgError, sort_keys=True,indent=4,separators=(',' ,':')), computation_phase='final')
     local2Yvalues = np.loadtxt(Y2["localSite2"])
 

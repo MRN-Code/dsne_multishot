@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Thu Oct 19 20:49:26 2017
+Created on Mon Jan 152017
 
-@author: gazula
+@author: Deb
 """
+
 
 import numpy as np
 
@@ -35,9 +34,10 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
     """Performs a binary search to get P-values in such a way that each
     conditional Gaussian has the same perplexity.
 
-    Args:
-
     Returns:
+        P: P is computed based on euclidean distance, perplexity and variance from high dimensional space. Suppose, if point 5 is near of point 1
+        in high dimensional space the P value(P51) would be high. if point 5 is far of point 1
+        in high dimensional space the P value(P51) would be low.
 
     """
 
@@ -125,7 +125,22 @@ def tsne(X=np.array([]),
          computation_phase='remote'):
     """Runs t-SNE on the dataset in the NxD array X to reduce its
     dimensionality to no_dims dimensions. The syntaxis of the function is
-    Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array."""
+    Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
+
+    Args:
+       X: High dimensional data
+       Y: low dimensiona shared data
+
+    Note:
+       When computation phase is remote, it is going to do operation only on remote data. No local site data presents there.
+       When computation phase is local, it will compute gradient based on combined data(remote+local). But after computing gradient,
+       it will update only local site data.
+
+    Returns:
+       Y: low dimensional computed value of X
+
+    """
+
 
     def updateS(Y, G):
         return Y
@@ -265,6 +280,15 @@ def master_child(Y, dY, iY, gains, n, Shared_length, P, iter, C):
 
 
 def normalize_columns(X=np.array([])):
+    '''Take data X and after performing max min normalization it will return the normalized X
+
+       Args:
+           X: high dimensional raw data
+       Returns:
+           X: Normalized X
+
+       '''
+
 	minimum = np.min(X);
 	X = X - minimum;
 	maximum = np.max(X)

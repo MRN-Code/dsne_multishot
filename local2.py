@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Thu Oct 19 20:49:04 2017
+Created on Mon Jan 152017
 
-@author: gazula
+@author: Deb
 """
+
+
 import numpy as np
 import argparse
 import json
@@ -13,16 +13,36 @@ from tsneFunctions import normalize_columns, tsne, master_child
 
 
 def updateL(Y, G):
+    ''' It will take Y and IY of only local site data and return the updated Y'''
     return Y + G
 
 
 def demeanL(Y, average_Y):
-    # Y= (Y22 + Y23 + Y24)/3
+    ''' It will take Y and average_Y of only local site data and return the updated Y by subtracting IY'''
+
     pp = np.tile(np.mean(Y, 0), (Y.shape[0], 1))
     return Y - np.tile(average_Y, (Y.shape[0], 1))
 
 
 def local_site2(args, compAvgError, computation_phase):
+    ''' It will load local data and download remote data and place it on top. Then it will run tsne on combined data(shared + local) and return low dimensional shared Y and IY
+
+           args (dictionary): {
+               "shared_X" (str): file path to remote site data,
+               "shared_Label" (str): file path to remote site labels
+               "no_dims" (int): Final plotting dimensions,
+               "initial_dims" (int): number of dimensions that PCA should produce
+               "perplexity" (int): initial guess for nearest neighbor
+               "shared_Y" (str):  the low-dimensional remote site data
+               }
+
+
+           Returns:
+               computation_phase(local): It will return only low dimensional shared data from local site
+               computation_phase(final): It will return only low dimensional local site data
+               computation_phase(computation): It will return only low dimensional shared data Y and corresponding IY
+           '''
+
     C =0
     if computation_phase is 'local':
         shared_X = np.loadtxt(args["shared_X"])
@@ -68,7 +88,7 @@ def local_site2(args, compAvgError, computation_phase):
                 f1.write(str(local_site2.Y[i][1]) + '\n')
 
         # pass data to remote in json format
-        localJsonY = ''' {"localSite2SharedIY": "site2SharedY.txt"} '''
+        localJsonY = ''' {"localSite1SharedIY": "site2SharedY.txt"} '''
         sharedY = parser.parse_args(['--run', localJsonY])
 
         return (sharedY.run)
